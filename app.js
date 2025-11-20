@@ -1,7 +1,6 @@
 // 1. Importáljuk az Express modult
 const express = require('express');
-
-const { Sequelize, DataTypes } = require('sequelize'); // Importáljuk a Sequelize-t
+const { connectToDatabase, models } = require('./db'); // Adatbázis modul importálása
 
 // 2. Létrehozzuk az alkalmazás példányát
 const app = express();
@@ -11,53 +10,15 @@ app.use(express.json());
 // 3. Beállítunk egy portot, amit a szerver figyelni fog
 const PORT = 3000;
 
-// 1. Sequelize Kapcsolat Létrehozása (SQLite fájl)
-// Ez automatikusan létrehozza a 'database.sqlite' fájlt.
-const sequelize = new Sequelize({
-  dialect: 'sqlite',
-  storage: './database.sqlite', // Az adatbázis fájl neve
-  logging: false, // Kikapcsolja a Sequelize SQL logjait
-});
+// Modellek kinyerése a `models` objektumból
+const { User: UserModel, Task: TaskModel } = models;
 
-// 2. Modell importálása és beállítása
-const TaskModel = require('./models/Task')(sequelize, DataTypes); 
-const UserModel = require('./models/User')(sequelize, DataTypes); 
-
-// Modellek összekapcsolása (asszociációk)
-const models = {
-  User: UserModel,
-  Task: TaskModel
-};
-
-Object.keys(models).forEach(modelName => {
-  if (models[modelName].associate) {
-    models[modelName].associate(models);
-  }
-});
-
-// 3. Adatbázis Szinkronizálása és Szerver Indítása
+// 4. Alkalmazás inicializálása és szerver indítása
 async function initializeApp() {
-  try {
-    // Kapcsolat ellenőrzése
-    await sequelize.authenticate();
-    console.log('Adatbázis kapcsolat létrejött.');
-
-    // Táblák létrehozása a modell alapján, ha még nem léteznek.
-    // Fejlesztés elején hasznos, éles környezetben SOHA!
-    await sequelize.sync({
-      force: true, // Minden indításnál újrahozza a táblákat
-      //  alter: true // Megpróbálja szinkronban tartani a táblákat a modellekkel anélkül, hogy törölné az adatokat
-    }); 
-    console.log("Minden modell szinkronizálva az adatbázissal.");
-
-    // Szerver indítása
-    app.listen(PORT, () => {
-      console.log(`A Szerver fut a http://localhost:${PORT} címen.`);
-    });
-
-  } catch (error) {
-    console.error('Hiba az inicializáláskor:', error);
-  }
+  await connectToDatabase(); // Kapcsolódás az adatbázishoz
+  app.listen(PORT, () => {
+    console.log(`A Szerver fut a http://localhost:${PORT} címen.`);
+  });
 }
 
 initializeApp();
@@ -71,7 +32,7 @@ app.post('/tasks', async (req, res) => {
     if (!title || !userId) {
       return res.status(400).json({ error: 'A "title" és "userId" mezők kitöltése kötelező.' });
     }
-
+  //  console.log(req.body );
     // 3. Sequelize: Új rekord létrehozása a modell alapján
     const newTask = await TaskModel.create({ title, description, userId });
 
@@ -109,7 +70,7 @@ app.post('/users', async (req, res) => {
 });
 
 
-// 4. Létrehozunk egy egyszerű GET végpontot
+// Összes feladat lekérdezése
 // Példa: Összes feladat lekérdezése Sequelize-vel
 app.get('/tasks', async (req, res) => {
   try {
@@ -117,5 +78,16 @@ app.get('/tasks', async (req, res) => {
     res.json(tasks);
   } catch (error) {
     res.status(500).json({ error: 'Hiba a feladatok lekérdezésekor.' });
+  }
+});
+
+// Összes user lekérdezése
+// Példa: Összes user lekérdezése Sequelize-vel
+app.get('/users', async (req, res) => {
+  try {
+    const users = await UserModel.findAll(); // SQL helyett JS metódus!
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ error: 'Hiba a felhasználók lekérdezésekor.' });
   }
 });

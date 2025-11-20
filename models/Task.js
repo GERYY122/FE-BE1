@@ -23,8 +23,8 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false, // Egy Task-nak mindig lennie kell szerzőjének
       // A reláció definíciója:
-      references: {
-        model: 'User', // A modell neve, amire hivatkozunk
+      references: { // A reláció definíciója:
+        model: 'Users', // A tábla neve, amire hivatkozunk (alapértelmezetten a modell neve többes számban)
         key: 'id'      // A hivatkozott kulcs a User táblában
       }
     }
