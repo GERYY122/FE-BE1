@@ -25,6 +25,15 @@ Object.keys(models).forEach(modelName => {
   }
 });
 
+// --- MÓDOSÍTÁS KEZDETE ---
+// A kaszkádolt törlés beállítása.
+// Explicit módon itt definiáljuk újra a kapcsolatokat a megfelelő opciókkal.
+models.User.hasMany(models.Task, { foreignKey: 'userId' });
+models.Task.belongsTo(models.User, {
+  foreignKey: 'userId',
+  onDelete: 'CASCADE' // Ha egy User törlődik, a hozzá tartozó Task-ok is törlődjenek.
+});
+
 // 6. Adatbázis Szinkronizálása
 async function connectToDatabase() {
   try {

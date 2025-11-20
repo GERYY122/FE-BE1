@@ -29,4 +29,26 @@ router.get('/', async (req, res) => {
   }
 });
 
+// DELETE /users/:id - Felhasználó és a hozzá tartozó feladatok törlése
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await UserModel.findByPk(id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'A megadott ID-val nem található felhasználó.' });
+    }
+
+    // A felhasználó törlése.
+    // Az onDelete: 'CASCADE' beállítás miatt a Sequelize (és az adatbázis)
+    // automatikusan törli a felhasználóhoz tartozó összes feladatot is.
+    await user.destroy();
+
+    res.status(200).json({ message: `A(z) ${id} ID-jú felhasználó és az összes hozzá tartozó feladat sikeresen törölve.` });
+  } catch (error) {
+    console.error('Hiba a felhasználó törlésekor:', error);
+    res.status(500).json({ error: 'Szerveroldali hiba a törlés során.' });
+  }
+});
+
 module.exports = router;

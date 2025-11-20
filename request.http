@@ -44,3 +44,13 @@ GET http://localhost:3000/tasks
 
 ### GET kérés az összes felhasználó lekérdezésére
 GET http://localhost:3000/users
+
+###
+
+DELETE http://localhost:3000/tasks/2
+
+### --------------------------------------------------
+
+### Felhasználó törlése (és a hozzá tartozó feladatoké)
+# FONTOS: Cseréld le a '2'-est a törölni kívánt felhasználó valós ID-jára!
+DELETE http://localhost:3000/users/1
