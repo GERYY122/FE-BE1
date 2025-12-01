@@ -15,6 +15,6 @@
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "node app.js": "^3.1.11"
   }
 }
